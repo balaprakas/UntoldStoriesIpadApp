@@ -1,0 +1,28 @@
+{
+  "stories": [
+    {
+      "id": 1,
+      "title": "My Story 1",
+      "level": 3,
+      "locked": false,
+      "gradient": "from-purple-400 to-pink-500",
+      "icon": "🏙️"
+    },
+    {
+      "id": 2,
+      "title": "My Story 2",
+      "level": 1,
+      "locked": false,
+      "gradient": "from-orange-400 to-pink-500",
+      "icon": "⚽"
+    },
+    {
+      "id": 3,
+      "title": "My Story 3",
+      "level": null,
+      "locked": true,
+      "gradient": "from-blue-400 to-blue-600",
+      "icon": "📚"
+    }
+  ]
+}
