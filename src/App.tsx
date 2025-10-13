@@ -22,22 +22,21 @@ function App() {
 
           <div className="text-center mb-6">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-              Aloha! Selamat datang di Kids Land!
+              Untold Stories!
             </h1>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Mari belajar dengan karakter-karakter lucu yang siap menemanimu
-              berpetualang di dunia pengetahuan untuk anak usia 7-14 tahun
+              “Every child’s imagination deserves a stage.”
             </p>
           </div>
 
           <div className="flex flex-col items-center gap-4 mt-8">
             <button className="w-full max-w-md bg-gradient-to-r from-purple-500 to-purple-700 text-white font-semibold py-4 px-8 rounded-full hover:from-purple-600 hover:to-purple-800 transition-all shadow-lg">
-              Daftar Sekarang
+              Login
             </button>
             <p className="text-gray-600">
-              Sudah punya akun?{' '}
+              New User?
               <a href="#" className="text-purple-600 font-semibold hover:text-purple-700">
-                Masuk
+                 Register
               </a>
             </p>
           </div>
