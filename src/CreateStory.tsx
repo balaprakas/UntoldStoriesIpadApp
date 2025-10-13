@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import { BookData, Page as PageType, Element, TextElement, ContentPage } from './types'
 import Page from './components/Page'
 import ControlBar from './components/ControlBar'
+import ImageTray from './components/ImageTray'
 import './CreateStory.css'
 
 function CreateStory() {
@@ -33,6 +34,7 @@ function CreateStory() {
   const [activePageIndex, setActivePageIndex] = useState(1)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedElement, setSelectedElement] = useState<Element | null>(null)
+  const [isImageTrayVisible, setIsImageTrayVisible] = useState(false)
   const bookRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
@@ -88,9 +90,12 @@ function CreateStory() {
     setSelectedElement(newElement)
   }
   
-  const addImageElement = () => {
-    const imageUrl = prompt('Enter image URL:')
-    if (!imageUrl || !isEditMode) return
+  const toggleImageTray = () => {
+    setIsImageTrayVisible(!isImageTrayVisible)
+  }
+  
+  const addImageFromUrl = (imageUrl: string) => {
+    if (!isEditMode) return
     
     const pageIndex = activePageIndex
     const page = bookData.pages[pageIndex] as ContentPage
@@ -114,6 +119,7 @@ function CreateStory() {
     newPages[pageIndex] = updatedPage
     setBookData({ ...bookData, pages: newPages })
     setSelectedElement(newElement)
+    setIsImageTrayVisible(false)
   }
   
   const deleteSelectedElement = () => {
@@ -230,6 +236,142 @@ function CreateStory() {
     updateElement(updatedElement)
   }
   
+  const handleDrop = (e: React.DragEvent, pageIndex: number) => {
+    e.preventDefault()
+    if (!isEditMode) return
+    
+    const imageUrl = e.dataTransfer.getData('text/plain')
+    if (!imageUrl) return
+    
+    const page = bookData.pages[pageIndex] as ContentPage
+    if (page.type !== 'page') return
+    
+    const rect = e.currentTarget.getBoundingClientRect()
+    const x = e.clientX - rect.left - 100
+    const y = e.clientY - rect.top - 100
+    
+    const newElement = {
+      type: 'image' as const,
+      src: imageUrl,
+      x: Math.max(0, x),
+      y: Math.max(0, y),
+      width: 200,
+      height: 200,
+      rotation: 0,
+      zIndex: page.elements.length + 1,
+      id: `el_${Date.now()}`,
+      imageFrame: 'none' as const
+    }
+    
+    const newPages = [...bookData.pages]
+    const updatedPage = { ...page, elements: [...page.elements, newElement] }
+    newPages[pageIndex] = updatedPage
+    setBookData({ ...bookData, pages: newPages })
+    setSelectedElement(newElement)
+    setIsImageTrayVisible(false)
+  }
+  
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
+  const handlePageBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !isEditMode) return
+    
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const imageUrl = event.target?.result as string
+      const newPages = bookData.pages.map((page, idx) => {
+        if (idx === activePageIndex && page.type === 'page') {
+          return { ...page, background: { src: imageUrl, opacity: page.background.opacity || 1 } }
+        }
+        return page
+      })
+      setBookData({ ...bookData, pages: newPages })
+    }
+    reader.readAsDataURL(file)
+  }
+  
+  const handlePageBgOpacity = (opacity: number) => {
+    if (!isEditMode) return
+    const newPages = bookData.pages.map((page, idx) => {
+      if (idx === activePageIndex && page.type === 'page') {
+        return { ...page, background: { ...page.background, opacity } }
+      }
+      return page
+    })
+    setBookData({ ...bookData, pages: newPages })
+  }
+  
+  const removePageBg = () => {
+    if (!isEditMode) return
+    const newPages = bookData.pages.map((page, idx) => {
+      if (idx === activePageIndex && page.type === 'page') {
+        return { ...page, background: { src: '', opacity: 1 } }
+      }
+      return page
+    })
+    setBookData({ ...bookData, pages: newPages })
+  }
+
+  const increaseFontSize = () => {
+    if (!selectedElement || selectedElement.type !== 'text') return
+    const currentSize = selectedElement.fontSize || 16
+    const newSize = Math.min(72, currentSize + 2)
+    updateTextProperty('fontSize', newSize)
+  }
+  
+  const decreaseFontSize = () => {
+    if (!selectedElement || selectedElement.type !== 'text') return
+    const currentSize = selectedElement.fontSize || 16
+    const newSize = Math.max(8, currentSize - 2)
+    updateTextProperty('fontSize', newSize)
+  }
+  
+  const updateTextBgColor = (color: string) => {
+    if (!selectedElement || selectedElement.type !== 'text') return
+    const rgba = hexToRgba(color, getTextBgOpacity())
+    updateTextProperty('backgroundColor', rgba)
+  }
+  
+  const updateTextBgOpacity = (opacity: number) => {
+    if (!selectedElement || selectedElement.type !== 'text') return
+    const color = getTextBgColor()
+    const rgba = hexToRgba(color, opacity)
+    updateTextProperty('backgroundColor', rgba)
+  }
+  
+  const getTextBgColor = (): string => {
+    if (!selectedElement || selectedElement.type !== 'text') return '#e6e6e6'
+    const bg = selectedElement.backgroundColor
+    const match = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+    if (match) {
+      return `#${((1 << 24) + (parseInt(match[1]) << 16) + (parseInt(match[2]) << 8) + parseInt(match[3])).toString(16).slice(1)}`
+    }
+    return '#e6e6e6'
+  }
+  
+  const getTextBgOpacity = (): number => {
+    if (!selectedElement || selectedElement.type !== 'text') return 0.7
+    const bg = selectedElement.backgroundColor
+    const match = bg.match(/rgba?\([^,]+,[^,]+,[^,]+,\s*([\d.]+)\)/)
+    return match ? parseFloat(match[1]) : 1
+  }
+  
+  const hexToRgba = (hex: string, opacity: number): string => {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`
+  }
+  
+  const updateImageFrame = (frame: string) => {
+    if (!selectedElement || selectedElement.type !== 'image') return
+    const updatedElement = { ...selectedElement, imageFrame: frame as any }
+    updateElement(updatedElement)
+  }
+  
   const flipPage = (direction: 'next' | 'prev') => {
     if (direction === 'next' && currentPageIndex < bookData.pages.length - 1) {
       setCurrentPageIndex(currentPageIndex + 1)
@@ -270,7 +412,9 @@ function CreateStory() {
           
           {currentPageIndex > 0 && currentPageIndex < bookData.pages.length && (
             <>
-              <div className="page-left absolute left-0 w-1/2 h-full">
+              <div className="page-left absolute left-0 w-1/2 h-full"
+                   onDrop={(e) => handleDrop(e, currentPageIndex)}
+                   onDragOver={handleDragOver}>
                 <Page
                   pageData={bookData.pages[currentPageIndex]}
                   pageIndex={currentPageIndex}
@@ -283,7 +427,9 @@ function CreateStory() {
               </div>
               
               {currentPageIndex + 1 < bookData.pages.length && (
-                <div className="page-right absolute right-0 w-1/2 h-full">
+                <div className="page-right absolute right-0 w-1/2 h-full"
+                     onDrop={(e) => handleDrop(e, currentPageIndex + 1)}
+                     onDragOver={handleDragOver}>
                   <Page
                     pageData={bookData.pages[currentPageIndex + 1]}
                     pageIndex={currentPageIndex + 1}
@@ -325,16 +471,27 @@ function CreateStory() {
       <ControlBar
         isEditMode={isEditMode}
         selectedElement={selectedElement}
+        currentPage={bookData.pages[activePageIndex] as ContentPage}
         onToggleEditMode={toggleEditMode}
         onAddText={addTextElement}
-        onAddImage={addImageElement}
+        onAddImage={toggleImageTray}
         onDeleteElement={deleteSelectedElement}
         onAddPage={addPage}
         onExportJSON={exportJSON}
         onBringForward={bringForward}
         onSendBackward={sendBackward}
         onUpdateTextProperty={updateTextProperty}
+        onIncreaseFontSize={increaseFontSize}
+        onDecreaseFontSize={decreaseFontSize}
+        onUpdateTextBgColor={updateTextBgColor}
+        onUpdateTextBgOpacity={updateTextBgOpacity}
+        onUpdateImageFrame={updateImageFrame}
+        onPageBgUpload={handlePageBgUpload}
+        onPageBgOpacity={handlePageBgOpacity}
+        onRemovePageBg={removePageBg}
       />
+      
+      <ImageTray isVisible={isImageTrayVisible} onImageSelect={addImageFromUrl} />
     </div>
   )
 }
