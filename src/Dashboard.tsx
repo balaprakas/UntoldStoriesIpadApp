@@ -1,8 +1,10 @@
 import { Play, Lock, Plus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import storiesData from './stories.json'
 
 function Dashboard() {
   const { stories } = storiesData
+  const navigate = useNavigate()
 
   return (
     <div className="min-h-screen bg-amber-50 p-6 md:p-8">
@@ -16,7 +18,10 @@ function Dashboard() {
               Ayo belajar bersama Kids Land
             </p>
           </div>
-          <button className="bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white rounded-full p-4 shadow-lg transition-all">
+          <button 
+            onClick={() => navigate('/create-story')}
+            className="bg-gradient-to-r from-purple-500 to-purple-700 hover:from-purple-600 hover:to-purple-800 text-white rounded-full p-4 shadow-lg transition-all"
+          >
             <Plus size={32} strokeWidth={3} />
           </button>
         </div>
