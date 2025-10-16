@@ -419,7 +419,7 @@ function CreateStory() {
       
       <div 
         ref={containerRef}
-        className="book-container w-full max-w-[1000px] h-[600px] relative mb-32 flex items-center justify-center"
+        className="book-container w-full max-w-[1000px] h-[600px] relative mb-2 flex items-center justify-center"
       >
         <div 
           ref={bookRef}
@@ -482,7 +482,7 @@ function CreateStory() {
         </div>
       </div>
       
-      <div className="flex justify-between items-center mt-4 w-full max-w-[1000px]">
+      <div className="flex justify-between items-center mt-2 mb-24 w-full max-w-[1000px] relative z-10">
         <button
           onClick={() => flipPage('prev')}
           disabled={currentPageIndex === 0}
