@@ -84,11 +84,6 @@ function CreateStory() {
     return (pixels / base) * 100
   }
   
-  const percentToPixels = (percent: number, dimension: 'width' | 'height') => {
-    const base = dimension === 'width' ? bookData.canvas.width : bookData.canvas.height
-    return (percent / 100) * base
-  }
-  
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode)
     setSelectedElement(null)
