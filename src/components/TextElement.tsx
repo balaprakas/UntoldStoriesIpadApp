@@ -87,8 +87,6 @@ function TextElement({ element, canvas, isEditMode, isSelected, onSelect, onUpda
           fontSize: `${fontSizePixels}px`,
           padding: '10px',
           lineHeight: '1.4',
-          minWidth: '50px',
-          minHeight: '30px',
           whiteSpace: 'pre-wrap',
           wordWrap: 'break-word',
           touchAction: 'none'

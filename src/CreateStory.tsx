@@ -96,13 +96,21 @@ function CreateStory() {
     const page = bookData.pages[pageIndex] as ContentPage
     if (page.type !== 'page') return
     
+    const isFullWidthPage = pageIndex === 0 || pageIndex === bookData.pages.length - 1
+    const pageWidth = isFullWidthPage ? bookData.canvas.width : bookData.canvas.width / 2
+    
+    const pixelsToPercentForPage = (pixels: number, dimension: 'width' | 'height') => {
+      const base = dimension === 'width' ? pageWidth : bookData.canvas.height
+      return (pixels / base) * 100
+    }
+    
     const newElement: TextElement = {
       type: 'text',
       content: 'New text',
-      x: pixelsToPercent(100, 'width'),
-      y: pixelsToPercent(100, 'height'),
-      width: pixelsToPercent(200, 'width'),
-      height: pixelsToPercent(100, 'height'),
+      x: pixelsToPercentForPage(100, 'width'),
+      y: pixelsToPercentForPage(100, 'height'),
+      width: pixelsToPercentForPage(200, 'width'),
+      height: pixelsToPercentForPage(100, 'height'),
       rotation: 0,
       zIndex: page.elements.length + 1,
       id: `el_${Date.now()}`,
@@ -112,7 +120,7 @@ function CreateStory() {
       textShape: 'rectangle',
       backgroundColor: 'rgba(230, 230, 230, 0.7)',
       color: '#000000',
-      fontSize: pixelsToPercent(16, 'width')
+      fontSize: pixelsToPercentForPage(16, 'width')
     }
     
     const newPages = [...bookData.pages]
@@ -133,13 +141,21 @@ function CreateStory() {
     const page = bookData.pages[pageIndex] as ContentPage
     if (page.type !== 'page') return
     
+    const isFullWidthPage = pageIndex === 0 || pageIndex === bookData.pages.length - 1
+    const pageWidth = isFullWidthPage ? bookData.canvas.width : bookData.canvas.width / 2
+    
+    const pixelsToPercentForPage = (pixels: number, dimension: 'width' | 'height') => {
+      const base = dimension === 'width' ? pageWidth : bookData.canvas.height
+      return (pixels / base) * 100
+    }
+    
     const newElement = {
       type: 'image' as const,
       src: imageUrl,
-      x: pixelsToPercent(100, 'width'),
-      y: pixelsToPercent(100, 'height'),
-      width: pixelsToPercent(200, 'width'),
-      height: pixelsToPercent(200, 'height'),
+      x: pixelsToPercentForPage(100, 'width'),
+      y: pixelsToPercentForPage(100, 'height'),
+      width: pixelsToPercentForPage(200, 'width'),
+      height: pixelsToPercentForPage(200, 'height'),
       rotation: 0,
       zIndex: page.elements.length + 1,
       id: `el_${Date.now()}`,
@@ -278,6 +294,14 @@ function CreateStory() {
     const page = bookData.pages[pageIndex] as ContentPage
     if (page.type !== 'page') return
     
+    const isFullWidthPage = pageIndex === 0 || pageIndex === bookData.pages.length - 1
+    const pageWidth = isFullWidthPage ? bookData.canvas.width : bookData.canvas.width / 2
+    
+    const pixelsToPercentForPage = (pixels: number, dimension: 'width' | 'height') => {
+      const base = dimension === 'width' ? pageWidth : bookData.canvas.height
+      return (pixels / base) * 100
+    }
+    
     const rect = e.currentTarget.getBoundingClientRect()
     const xPixels = (e.clientX - rect.left) / scale - 100
     const yPixels = (e.clientY - rect.top) / scale - 100
@@ -285,10 +309,10 @@ function CreateStory() {
     const newElement = {
       type: 'image' as const,
       src: imageUrl,
-      x: Math.max(0, pixelsToPercent(xPixels, 'width')),
-      y: Math.max(0, pixelsToPercent(yPixels, 'height')),
-      width: pixelsToPercent(200, 'width'),
-      height: pixelsToPercent(200, 'height'),
+      x: Math.max(0, pixelsToPercentForPage(xPixels, 'width')),
+      y: Math.max(0, pixelsToPercentForPage(yPixels, 'height')),
+      width: pixelsToPercentForPage(200, 'width'),
+      height: pixelsToPercentForPage(200, 'height'),
       rotation: 0,
       zIndex: page.elements.length + 1,
       id: `el_${Date.now()}`,
