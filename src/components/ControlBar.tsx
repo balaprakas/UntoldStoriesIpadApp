@@ -50,7 +50,7 @@ function ControlBar({
   const imageElement = selectedElement?.type === 'image' ? selectedElement : null
 
   return (
-    <div className="fixed bottom-0 left-0 w-full bg-white shadow-[0_-5px_15px_rgba(0,0,0,0.3)] z-[5000]">
+    <div className="fixed bottom-0 left-0 w-full bg-white shadow-[0_-5px_15px_rgba(0,0,0,0.3)] z-[5000] max-h-[50vh] overflow-y-auto">
       <div className="p-4">
         <div className="flex flex-wrap gap-2 justify-center items-center mb-3">
           <button 
