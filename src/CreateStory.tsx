@@ -480,28 +480,28 @@ function CreateStory() {
             </>
           )}
         </div>
+      </div>
+      
+      <div className="flex justify-between items-center mt-4 w-full max-w-[1000px]">
+        <button
+          onClick={() => flipPage('prev')}
+          disabled={currentPageIndex === 0}
+          className="px-6 py-3 bg-green-600 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700 transition-colors font-semibold"
+        >
+          ← Previous
+        </button>
         
-        <div className="flex justify-between items-center mt-4">
-          <button
-            onClick={() => flipPage('prev')}
-            disabled={currentPageIndex === 0}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700 transition-colors font-semibold"
-          >
-            ← Previous
-          </button>
-          
-          <span className="text-gray-600 font-semibold">
-            Page {currentPageIndex + 1} - {Math.min(currentPageIndex + 2, bookData.pages.length)} of {bookData.pages.length}
-          </span>
-          
-          <button
-            onClick={() => flipPage('next')}
-            disabled={currentPageIndex >= bookData.pages.length - 2}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700 transition-colors font-semibold"
-          >
-            Next →
-          </button>
-        </div>
+        <span className="text-gray-600 font-semibold">
+          Page {currentPageIndex + 1} - {Math.min(currentPageIndex + 2, bookData.pages.length)} of {bookData.pages.length}
+        </span>
+        
+        <button
+          onClick={() => flipPage('next')}
+          disabled={currentPageIndex >= bookData.pages.length - 2}
+          className="px-6 py-3 bg-green-600 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700 transition-colors font-semibold"
+        >
+          Next →
+        </button>
       </div>
       
       <ControlBar
