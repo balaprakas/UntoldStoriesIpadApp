@@ -446,6 +446,7 @@ function CreateStory() {
                 canvas={bookData.canvas}
                 isEditMode={isEditMode}
                 isActive={activePageIndex === 0}
+                selectedElement={selectedElement}
                 onSelectElement={selectElement}
                 onUpdateElement={updateElement}
               />
@@ -464,6 +465,7 @@ function CreateStory() {
                   canvas={bookData.canvas}
                   isEditMode={isEditMode}
                   isActive={activePageIndex === currentPageIndex}
+                  selectedElement={selectedElement}
                   onSelectElement={selectElement}
                   onUpdateElement={updateElement}
                 />
@@ -480,6 +482,7 @@ function CreateStory() {
                     canvas={bookData.canvas}
                     isEditMode={isEditMode}
                     isActive={activePageIndex === currentPageIndex + 1}
+                    selectedElement={selectedElement}
                     onSelectElement={selectElement}
                     onUpdateElement={updateElement}
                   />
