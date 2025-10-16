@@ -55,6 +55,12 @@ export interface BackCoverPage {
 
 export type Page = CoverPage | ContentPage | BackCoverPage;
 
+export interface CanvasSize {
+  width: number;
+  height: number;
+}
+
 export interface BookData {
+  canvas: CanvasSize;
   pages: Page[];
 }
