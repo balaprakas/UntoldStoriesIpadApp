@@ -10,6 +10,7 @@ import './CreateStory.css'
 function CreateStory() {
   const navigate = useNavigate()
   const [bookData, setBookData] = useState<BookData>({
+    canvas: { width: 1024, height: 768 },
     pages: [
       { type: 'cover', content: { title: 'My Awesome Story' } },
       {
@@ -35,13 +36,19 @@ function CreateStory() {
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedElement, setSelectedElement] = useState<Element | null>(null)
   const [isImageTrayVisible, setIsImageTrayVisible] = useState(false)
+  const [scale, setScale] = useState(1)
   const bookRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
     const saved = localStorage.getItem('storybook-data')
     if (saved) {
       try {
-        setBookData(JSON.parse(saved))
+        const parsedData = JSON.parse(saved)
+        if (!parsedData.canvas) {
+          parsedData.canvas = { width: 1024, height: 768 }
+        }
+        setBookData(parsedData)
       } catch (e) {
         console.error('Failed to load saved data')
       }
@@ -51,6 +58,26 @@ function CreateStory() {
   useEffect(() => {
     localStorage.setItem('storybook-data', JSON.stringify(bookData))
   }, [bookData])
+  
+  useEffect(() => {
+    const calculateScale = () => {
+      if (containerRef.current && bookData.canvas) {
+        const container = containerRef.current
+        const containerWidth = container.clientWidth
+        const containerHeight = container.clientHeight
+        
+        const scaleX = containerWidth / bookData.canvas.width
+        const scaleY = containerHeight / bookData.canvas.height
+        const newScale = Math.min(scaleX, scaleY, 1)
+        
+        setScale(newScale)
+      }
+    }
+    
+    calculateScale()
+    window.addEventListener('resize', calculateScale)
+    return () => window.removeEventListener('resize', calculateScale)
+  }, [bookData.canvas])
   
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode)
@@ -247,8 +274,8 @@ function CreateStory() {
     if (page.type !== 'page') return
     
     const rect = e.currentTarget.getBoundingClientRect()
-    const x = e.clientX - rect.left - 100
-    const y = e.clientY - rect.top - 100
+    const x = (e.clientX - rect.left) / scale - 100
+    const y = (e.clientY - rect.top) / scale - 100
     
     const newElement = {
       type: 'image' as const,
@@ -390,11 +417,20 @@ function CreateStory() {
         Back to Dashboard
       </button>
       
-      <div className="book-container w-full max-w-[1000px] h-[600px] relative mb-32">
+      <div 
+        ref={containerRef}
+        className="book-container w-full max-w-[1000px] h-[600px] relative mb-32 flex items-center justify-center"
+      >
         <div 
           ref={bookRef}
-          className="book w-full h-full relative bg-white shadow-2xl"
-          style={{ transformStyle: 'preserve-3d' }}
+          className="book relative bg-white shadow-2xl"
+          style={{ 
+            transformStyle: 'preserve-3d',
+            width: `${bookData.canvas.width}px`,
+            height: `${bookData.canvas.height}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: 'center center'
+          }}
         >
           {currentPageIndex === 0 && (
             <div className="page-sheet absolute w-full h-full" style={{ transformStyle: 'preserve-3d' }}>
