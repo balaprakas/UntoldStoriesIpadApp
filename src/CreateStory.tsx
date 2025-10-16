@@ -18,11 +18,11 @@ function CreateStory() {
         elements: [{
           type: 'text',
           content: '<h2>Chapter 1</h2><p>Click Edit to start writing!</p>',
-          x: 50, y: 50, width: 300, height: 150, rotation: 0, zIndex: 1, id: 'el_1',
+          x: 4.88, y: 6.51, width: 29.30, height: 19.53, rotation: 0, zIndex: 1, id: 'el_1',
           fontFamily: 'nunito', fontWeight: 'normal', fontStyle: 'normal', textShape: 'rectangle',
           backgroundColor: 'rgba(230, 230, 230, 0.7)',
           color: '#000000',
-          fontSize: 16
+          fontSize: 2.08
         }],
         background: { src: '', opacity: 1 }
       },
@@ -79,6 +79,16 @@ function CreateStory() {
     return () => window.removeEventListener('resize', calculateScale)
   }, [bookData.canvas])
   
+  const pixelsToPercent = (pixels: number, dimension: 'width' | 'height') => {
+    const base = dimension === 'width' ? bookData.canvas.width : bookData.canvas.height
+    return (pixels / base) * 100
+  }
+  
+  const percentToPixels = (percent: number, dimension: 'width' | 'height') => {
+    const base = dimension === 'width' ? bookData.canvas.width : bookData.canvas.height
+    return (percent / 100) * base
+  }
+  
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode)
     setSelectedElement(null)
@@ -94,10 +104,10 @@ function CreateStory() {
     const newElement: TextElement = {
       type: 'text',
       content: 'New text',
-      x: 100,
-      y: 100,
-      width: 200,
-      height: 100,
+      x: pixelsToPercent(100, 'width'),
+      y: pixelsToPercent(100, 'height'),
+      width: pixelsToPercent(200, 'width'),
+      height: pixelsToPercent(100, 'height'),
       rotation: 0,
       zIndex: page.elements.length + 1,
       id: `el_${Date.now()}`,
@@ -107,7 +117,7 @@ function CreateStory() {
       textShape: 'rectangle',
       backgroundColor: 'rgba(230, 230, 230, 0.7)',
       color: '#000000',
-      fontSize: 16
+      fontSize: pixelsToPercent(16, 'width')
     }
     
     const newPages = [...bookData.pages]
@@ -131,10 +141,10 @@ function CreateStory() {
     const newElement = {
       type: 'image' as const,
       src: imageUrl,
-      x: 100,
-      y: 100,
-      width: 200,
-      height: 200,
+      x: pixelsToPercent(100, 'width'),
+      y: pixelsToPercent(100, 'height'),
+      width: pixelsToPercent(200, 'width'),
+      height: pixelsToPercent(200, 'height'),
       rotation: 0,
       zIndex: page.elements.length + 1,
       id: `el_${Date.now()}`,
@@ -274,16 +284,16 @@ function CreateStory() {
     if (page.type !== 'page') return
     
     const rect = e.currentTarget.getBoundingClientRect()
-    const x = (e.clientX - rect.left) / scale - 100
-    const y = (e.clientY - rect.top) / scale - 100
+    const xPixels = (e.clientX - rect.left) / scale - 100
+    const yPixels = (e.clientY - rect.top) / scale - 100
     
     const newElement = {
       type: 'image' as const,
       src: imageUrl,
-      x: Math.max(0, x),
-      y: Math.max(0, y),
-      width: 200,
-      height: 200,
+      x: Math.max(0, pixelsToPercent(xPixels, 'width')),
+      y: Math.max(0, pixelsToPercent(yPixels, 'height')),
+      width: pixelsToPercent(200, 'width'),
+      height: pixelsToPercent(200, 'height'),
       rotation: 0,
       zIndex: page.elements.length + 1,
       id: `el_${Date.now()}`,
@@ -438,6 +448,7 @@ function CreateStory() {
                 pageData={bookData.pages[0]}
                 pageIndex={0}
                 face="front"
+                canvas={bookData.canvas}
                 isEditMode={isEditMode}
                 isActive={activePageIndex === 0}
                 onSelectElement={selectElement}
@@ -455,6 +466,7 @@ function CreateStory() {
                   pageData={bookData.pages[currentPageIndex]}
                   pageIndex={currentPageIndex}
                   face="front"
+                  canvas={bookData.canvas}
                   isEditMode={isEditMode}
                   isActive={activePageIndex === currentPageIndex}
                   onSelectElement={selectElement}
@@ -470,6 +482,7 @@ function CreateStory() {
                     pageData={bookData.pages[currentPageIndex + 1]}
                     pageIndex={currentPageIndex + 1}
                     face="front"
+                    canvas={bookData.canvas}
                     isEditMode={isEditMode}
                     isActive={activePageIndex === currentPageIndex + 1}
                     onSelectElement={selectElement}

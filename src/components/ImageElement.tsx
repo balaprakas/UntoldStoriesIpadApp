@@ -1,20 +1,31 @@
 import Draggable from 'react-draggable'
-import { ImageElement as ImageElementType } from '../types'
+import { ImageElement as ImageElementType, CanvasSize } from '../types'
 
 interface ImageElementProps {
   element: ImageElementType;
+  canvas: CanvasSize;
   isEditMode: boolean;
   isSelected: boolean;
   onSelect: () => void;
   onUpdate: (element: ImageElementType) => void;
 }
 
-function ImageElement({ element, isEditMode, isSelected, onSelect, onUpdate }: ImageElementProps) {
+function ImageElement({ element, canvas, isEditMode, isSelected, onSelect, onUpdate }: ImageElementProps) {
+  const percentToPixels = (percent: number, dimension: 'width' | 'height') => {
+    const base = dimension === 'width' ? canvas.width : canvas.height
+    return (percent / 100) * base
+  }
+  
+  const pixelsToPercent = (pixels: number, dimension: 'width' | 'height') => {
+    const base = dimension === 'width' ? canvas.width : canvas.height
+    return (pixels / base) * 100
+  }
+  
   const handleDragStop = (_e: any, data: any) => {
     onUpdate({
       ...element,
-      x: data.x,
-      y: data.y
+      x: pixelsToPercent(data.x, 'width'),
+      y: pixelsToPercent(data.y, 'height')
     })
   }
   
@@ -27,10 +38,15 @@ function ImageElement({ element, isEditMode, isSelected, onSelect, onUpdate }: I
   
   const frameClass = `image-frame-${element.imageFrame}`
   
+  const xPixels = percentToPixels(element.x, 'width')
+  const yPixels = percentToPixels(element.y, 'height')
+  const widthPixels = percentToPixels(element.width, 'width')
+  const heightPixels = percentToPixels(element.height, 'height')
+  
   return (
     <Draggable
       disabled={!isEditMode}
-      position={{ x: element.x, y: element.y }}
+      position={{ x: xPixels, y: yPixels }}
       onStop={handleDragStop}
       bounds="parent"
     >
@@ -39,8 +55,8 @@ function ImageElement({ element, isEditMode, isSelected, onSelect, onUpdate }: I
           isSelected && isEditMode ? 'selected ring-2 ring-green-600 ring-offset-2' : ''
         } ${isEditMode ? 'cursor-move' : 'cursor-default'}`}
         style={{
-          width: element.width,
-          height: element.height,
+          width: `${widthPixels}px`,
+          height: `${heightPixels}px`,
           transform: `rotate(${element.rotation}deg)`,
           zIndex: element.zIndex,
           touchAction: 'none'
