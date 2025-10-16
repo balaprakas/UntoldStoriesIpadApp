@@ -79,11 +79,6 @@ function CreateStory() {
     return () => window.removeEventListener('resize', calculateScale)
   }, [bookData.canvas])
   
-  const pixelsToPercent = (pixels: number, dimension: 'width' | 'height') => {
-    const base = dimension === 'width' ? bookData.canvas.width : bookData.canvas.height
-    return (pixels / base) * 100
-  }
-  
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode)
     setSelectedElement(null)
