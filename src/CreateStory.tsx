@@ -54,11 +54,37 @@ function CreateStory() {
     const loadStory = async () => {
       if (!user) return
 
-      const story = await localDB.getStory(storyId)
-      if (story) {
-        setBookData(story.bookData)
-        setStoryTitle(story.title)
-        setSaveStatus(story.isDirty ? 'unsaved' : 'saved')
+      const localStory = await localDB.getStory(storyId)
+      if (localStory) {
+        setBookData(localStory.bookData)
+        setStoryTitle(localStory.title)
+        setSaveStatus(localStory.isDirty ? 'unsaved' : 'saved')
+      }
+
+      const { data: cloudStory } = await supabase
+        .from('stories')
+        .select('*')
+        .eq('id', storyId)
+        .single()
+
+      if (cloudStory) {
+        const cloudDate = new Date(cloudStory.last_modified_at)
+        const localDate = localStory ? new Date(localStory.lastModifiedAt) : new Date(0)
+
+        if (cloudDate > localDate) {
+          setBookData(cloudStory.book_data)
+          setStoryTitle(cloudStory.title)
+          setSaveStatus('saved')
+
+          await localDB.saveStory({
+            id: cloudStory.id,
+            userId: cloudStory.user_id,
+            title: cloudStory.title,
+            bookData: cloudStory.book_data,
+            lastModifiedAt: cloudStory.last_modified_at,
+            isDirty: false
+          })
+        }
       }
     }
 
