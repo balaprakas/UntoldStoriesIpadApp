@@ -14,7 +14,7 @@ function CreateStory() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
-  const [storyId] = useState(() => searchParams.get('id') || `story_${Date.now()}`)
+  const [storyId] = useState(() => searchParams.get('id') || crypto.randomUUID())
   const [storyTitle, setStoryTitle] = useState('My Story')
   const [isSaving, setIsSaving] = useState(false)
   const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('unsaved')
