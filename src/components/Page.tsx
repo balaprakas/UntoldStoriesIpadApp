@@ -1,4 +1,4 @@
-import { Page as PageType, Element } from '../types'
+import { Page as PageType, Element, CanvasSize } from '../types'
 import TextElement from './TextElement'
 import ImageElement from './ImageElement'
 
@@ -6,13 +6,15 @@ interface PageProps {
   pageData: PageType;
   pageIndex: number;
   face: 'front' | 'back';
+  canvas: CanvasSize;
   isEditMode: boolean;
   isActive: boolean;
+  selectedElement: Element | null;
   onSelectElement: (element: Element) => void;
   onUpdateElement: (element: Element) => void;
 }
 
-function Page({ pageData, pageIndex, face, isEditMode, isActive, onSelectElement, onUpdateElement }: PageProps) {
+function Page({ pageData, pageIndex, face, canvas, isEditMode, isActive, selectedElement, onSelectElement, onUpdateElement }: PageProps) {
   if (pageData.type === 'cover') {
     return (
       <div className={`page-${face} absolute w-full h-full p-6 bg-gradient-to-br from-green-600 to-green-700 flex items-center justify-center flex-col`}
@@ -64,8 +66,9 @@ function Page({ pageData, pageIndex, face, isEditMode, isActive, onSelectElement
             <TextElement
               key={element.id}
               element={element}
+              canvas={canvas}
               isEditMode={isEditMode}
-              isSelected={false}
+              isSelected={selectedElement?.id === element.id}
               onSelect={() => onSelectElement(element)}
               onUpdate={onUpdateElement}
             />
@@ -73,8 +76,9 @@ function Page({ pageData, pageIndex, face, isEditMode, isActive, onSelectElement
             <ImageElement
               key={element.id}
               element={element}
+              canvas={canvas}
               isEditMode={isEditMode}
-              isSelected={false}
+              isSelected={selectedElement?.id === element.id}
               onSelect={() => onSelectElement(element)}
               onUpdate={onUpdateElement}
             />

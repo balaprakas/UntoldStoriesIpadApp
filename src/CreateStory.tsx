@@ -4,11 +4,13 @@ import { ArrowLeft } from 'lucide-react'
 import { BookData, Page as PageType, Element, TextElement, ContentPage } from './types'
 import Page from './components/Page'
 import ControlBar from './components/ControlBar'
+import ImageTray from './components/ImageTray'
 import './CreateStory.css'
 
 function CreateStory() {
   const navigate = useNavigate()
   const [bookData, setBookData] = useState<BookData>({
+    canvas: { width: 1024, height: 768 },
     pages: [
       { type: 'cover', content: { title: 'My Awesome Story' } },
       {
@@ -16,11 +18,11 @@ function CreateStory() {
         elements: [{
           type: 'text',
           content: '<h2>Chapter 1</h2><p>Click Edit to start writing!</p>',
-          x: 50, y: 50, width: 300, height: 150, rotation: 0, zIndex: 1, id: 'el_1',
+          x: 4.88, y: 6.51, width: 29.30, height: 19.53, rotation: 0, zIndex: 1, id: 'el_1',
           fontFamily: 'nunito', fontWeight: 'normal', fontStyle: 'normal', textShape: 'rectangle',
           backgroundColor: 'rgba(230, 230, 230, 0.7)',
           color: '#000000',
-          fontSize: 16
+          fontSize: 2.08
         }],
         background: { src: '', opacity: 1 }
       },
@@ -33,13 +35,20 @@ function CreateStory() {
   const [activePageIndex, setActivePageIndex] = useState(1)
   const [isEditMode, setIsEditMode] = useState(false)
   const [selectedElement, setSelectedElement] = useState<Element | null>(null)
+  const [isImageTrayVisible, setIsImageTrayVisible] = useState(false)
+  const [scale, setScale] = useState(1)
   const bookRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
     const saved = localStorage.getItem('storybook-data')
     if (saved) {
       try {
-        setBookData(JSON.parse(saved))
+        const parsedData = JSON.parse(saved)
+        if (!parsedData.canvas) {
+          parsedData.canvas = { width: 1024, height: 768 }
+        }
+        setBookData(parsedData)
       } catch (e) {
         console.error('Failed to load saved data')
       }
@@ -49,6 +58,26 @@ function CreateStory() {
   useEffect(() => {
     localStorage.setItem('storybook-data', JSON.stringify(bookData))
   }, [bookData])
+  
+  useEffect(() => {
+    const calculateScale = () => {
+      if (containerRef.current && bookData.canvas) {
+        const container = containerRef.current
+        const containerWidth = container.clientWidth
+        const containerHeight = container.clientHeight
+        
+        const scaleX = containerWidth / bookData.canvas.width
+        const scaleY = containerHeight / bookData.canvas.height
+        const newScale = Math.min(scaleX, scaleY, 1)
+        
+        setScale(newScale)
+      }
+    }
+    
+    calculateScale()
+    window.addEventListener('resize', calculateScale)
+    return () => window.removeEventListener('resize', calculateScale)
+  }, [bookData.canvas])
   
   const toggleEditMode = () => {
     setIsEditMode(!isEditMode)
@@ -62,13 +91,21 @@ function CreateStory() {
     const page = bookData.pages[pageIndex] as ContentPage
     if (page.type !== 'page') return
     
+    const isFullWidthPage = pageIndex === 0 || pageIndex === bookData.pages.length - 1
+    const pageWidth = isFullWidthPage ? bookData.canvas.width : bookData.canvas.width / 2
+    
+    const pixelsToPercentForPage = (pixels: number, dimension: 'width' | 'height') => {
+      const base = dimension === 'width' ? pageWidth : bookData.canvas.height
+      return (pixels / base) * 100
+    }
+    
     const newElement: TextElement = {
       type: 'text',
       content: 'New text',
-      x: 100,
-      y: 100,
-      width: 200,
-      height: 100,
+      x: pixelsToPercentForPage(100, 'width'),
+      y: pixelsToPercentForPage(100, 'height'),
+      width: pixelsToPercentForPage(200, 'width'),
+      height: pixelsToPercentForPage(100, 'height'),
       rotation: 0,
       zIndex: page.elements.length + 1,
       id: `el_${Date.now()}`,
@@ -78,7 +115,7 @@ function CreateStory() {
       textShape: 'rectangle',
       backgroundColor: 'rgba(230, 230, 230, 0.7)',
       color: '#000000',
-      fontSize: 16
+      fontSize: pixelsToPercentForPage(16, 'width')
     }
     
     const newPages = [...bookData.pages]
@@ -88,21 +125,32 @@ function CreateStory() {
     setSelectedElement(newElement)
   }
   
-  const addImageElement = () => {
-    const imageUrl = prompt('Enter image URL:')
-    if (!imageUrl || !isEditMode) return
+  const toggleImageTray = () => {
+    setIsImageTrayVisible(!isImageTrayVisible)
+  }
+  
+  const addImageFromUrl = (imageUrl: string) => {
+    if (!isEditMode) return
     
     const pageIndex = activePageIndex
     const page = bookData.pages[pageIndex] as ContentPage
     if (page.type !== 'page') return
     
+    const isFullWidthPage = pageIndex === 0 || pageIndex === bookData.pages.length - 1
+    const pageWidth = isFullWidthPage ? bookData.canvas.width : bookData.canvas.width / 2
+    
+    const pixelsToPercentForPage = (pixels: number, dimension: 'width' | 'height') => {
+      const base = dimension === 'width' ? pageWidth : bookData.canvas.height
+      return (pixels / base) * 100
+    }
+    
     const newElement = {
       type: 'image' as const,
       src: imageUrl,
-      x: 100,
-      y: 100,
-      width: 200,
-      height: 200,
+      x: pixelsToPercentForPage(100, 'width'),
+      y: pixelsToPercentForPage(100, 'height'),
+      width: pixelsToPercentForPage(200, 'width'),
+      height: pixelsToPercentForPage(200, 'height'),
       rotation: 0,
       zIndex: page.elements.length + 1,
       id: `el_${Date.now()}`,
@@ -114,6 +162,7 @@ function CreateStory() {
     newPages[pageIndex] = updatedPage
     setBookData({ ...bookData, pages: newPages })
     setSelectedElement(newElement)
+    setIsImageTrayVisible(false)
   }
   
   const deleteSelectedElement = () => {
@@ -230,6 +279,150 @@ function CreateStory() {
     updateElement(updatedElement)
   }
   
+  const handleDrop = (e: React.DragEvent, pageIndex: number) => {
+    e.preventDefault()
+    if (!isEditMode) return
+    
+    const imageUrl = e.dataTransfer.getData('text/plain')
+    if (!imageUrl) return
+    
+    const page = bookData.pages[pageIndex] as ContentPage
+    if (page.type !== 'page') return
+    
+    const isFullWidthPage = pageIndex === 0 || pageIndex === bookData.pages.length - 1
+    const pageWidth = isFullWidthPage ? bookData.canvas.width : bookData.canvas.width / 2
+    
+    const pixelsToPercentForPage = (pixels: number, dimension: 'width' | 'height') => {
+      const base = dimension === 'width' ? pageWidth : bookData.canvas.height
+      return (pixels / base) * 100
+    }
+    
+    const rect = e.currentTarget.getBoundingClientRect()
+    const xPixels = (e.clientX - rect.left) / scale - 100
+    const yPixels = (e.clientY - rect.top) / scale - 100
+    
+    const newElement = {
+      type: 'image' as const,
+      src: imageUrl,
+      x: Math.max(0, pixelsToPercentForPage(xPixels, 'width')),
+      y: Math.max(0, pixelsToPercentForPage(yPixels, 'height')),
+      width: pixelsToPercentForPage(200, 'width'),
+      height: pixelsToPercentForPage(200, 'height'),
+      rotation: 0,
+      zIndex: page.elements.length + 1,
+      id: `el_${Date.now()}`,
+      imageFrame: 'none' as const
+    }
+    
+    const newPages = [...bookData.pages]
+    const updatedPage = { ...page, elements: [...page.elements, newElement] }
+    newPages[pageIndex] = updatedPage
+    setBookData({ ...bookData, pages: newPages })
+    setSelectedElement(newElement)
+    setIsImageTrayVisible(false)
+  }
+  
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+  }
+
+  const handlePageBgUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !isEditMode) return
+    
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const imageUrl = event.target?.result as string
+      const newPages = bookData.pages.map((page, idx) => {
+        if (idx === activePageIndex && page.type === 'page') {
+          return { ...page, background: { src: imageUrl, opacity: page.background.opacity || 1 } }
+        }
+        return page
+      })
+      setBookData({ ...bookData, pages: newPages })
+    }
+    reader.readAsDataURL(file)
+  }
+  
+  const handlePageBgOpacity = (opacity: number) => {
+    if (!isEditMode) return
+    const newPages = bookData.pages.map((page, idx) => {
+      if (idx === activePageIndex && page.type === 'page') {
+        return { ...page, background: { ...page.background, opacity } }
+      }
+      return page
+    })
+    setBookData({ ...bookData, pages: newPages })
+  }
+  
+  const removePageBg = () => {
+    if (!isEditMode) return
+    const newPages = bookData.pages.map((page, idx) => {
+      if (idx === activePageIndex && page.type === 'page') {
+        return { ...page, background: { src: '', opacity: 1 } }
+      }
+      return page
+    })
+    setBookData({ ...bookData, pages: newPages })
+  }
+
+  const increaseFontSize = () => {
+    if (!selectedElement || selectedElement.type !== 'text') return
+    const currentSize = selectedElement.fontSize || 16
+    const newSize = Math.min(72, currentSize + 2)
+    updateTextProperty('fontSize', newSize)
+  }
+  
+  const decreaseFontSize = () => {
+    if (!selectedElement || selectedElement.type !== 'text') return
+    const currentSize = selectedElement.fontSize || 16
+    const newSize = Math.max(8, currentSize - 2)
+    updateTextProperty('fontSize', newSize)
+  }
+  
+  const updateTextBgColor = (color: string) => {
+    if (!selectedElement || selectedElement.type !== 'text') return
+    const rgba = hexToRgba(color, getTextBgOpacity())
+    updateTextProperty('backgroundColor', rgba)
+  }
+  
+  const updateTextBgOpacity = (opacity: number) => {
+    if (!selectedElement || selectedElement.type !== 'text') return
+    const color = getTextBgColor()
+    const rgba = hexToRgba(color, opacity)
+    updateTextProperty('backgroundColor', rgba)
+  }
+  
+  const getTextBgColor = (): string => {
+    if (!selectedElement || selectedElement.type !== 'text') return '#e6e6e6'
+    const bg = selectedElement.backgroundColor
+    const match = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/)
+    if (match) {
+      return `#${((1 << 24) + (parseInt(match[1]) << 16) + (parseInt(match[2]) << 8) + parseInt(match[3])).toString(16).slice(1)}`
+    }
+    return '#e6e6e6'
+  }
+  
+  const getTextBgOpacity = (): number => {
+    if (!selectedElement || selectedElement.type !== 'text') return 0.7
+    const bg = selectedElement.backgroundColor
+    const match = bg.match(/rgba?\([^,]+,[^,]+,[^,]+,\s*([\d.]+)\)/)
+    return match ? parseFloat(match[1]) : 1
+  }
+  
+  const hexToRgba = (hex: string, opacity: number): string => {
+    const r = parseInt(hex.slice(1, 3), 16)
+    const g = parseInt(hex.slice(3, 5), 16)
+    const b = parseInt(hex.slice(5, 7), 16)
+    return `rgba(${r}, ${g}, ${b}, ${opacity})`
+  }
+  
+  const updateImageFrame = (frame: string) => {
+    if (!selectedElement || selectedElement.type !== 'image') return
+    const updatedElement = { ...selectedElement, imageFrame: frame as any }
+    updateElement(updatedElement)
+  }
+  
   const flipPage = (direction: 'next' | 'prev') => {
     if (direction === 'next' && currentPageIndex < bookData.pages.length - 1) {
       setCurrentPageIndex(currentPageIndex + 1)
@@ -248,11 +441,21 @@ function CreateStory() {
         Back to Dashboard
       </button>
       
-      <div className="book-container w-full max-w-[1000px] h-[600px] relative mb-32">
+      <div 
+        ref={containerRef}
+        className="book-container w-full max-w-[1000px] h-[600px] md:h-[600px] relative mb-2 flex items-center justify-center"
+        style={{ height: 'clamp(300px, 80vh, 600px)' }}
+      >
         <div 
           ref={bookRef}
-          className="book w-full h-full relative bg-white shadow-2xl"
-          style={{ transformStyle: 'preserve-3d' }}
+          className="book relative bg-white shadow-2xl"
+          style={{ 
+            transformStyle: 'preserve-3d',
+            width: `${bookData.canvas.width}px`,
+            height: `${bookData.canvas.height}px`,
+            transform: `scale(${scale})`,
+            transformOrigin: 'center center'
+          }}
         >
           {currentPageIndex === 0 && (
             <div className="page-sheet absolute w-full h-full" style={{ transformStyle: 'preserve-3d' }}>
@@ -260,8 +463,10 @@ function CreateStory() {
                 pageData={bookData.pages[0]}
                 pageIndex={0}
                 face="front"
+                canvas={bookData.canvas}
                 isEditMode={isEditMode}
                 isActive={activePageIndex === 0}
+                selectedElement={selectedElement}
                 onSelectElement={selectElement}
                 onUpdateElement={updateElement}
               />
@@ -270,26 +475,34 @@ function CreateStory() {
           
           {currentPageIndex > 0 && currentPageIndex < bookData.pages.length && (
             <>
-              <div className="page-left absolute left-0 w-1/2 h-full">
+              <div className="page-left absolute left-0 w-1/2 h-full"
+                   onDrop={(e) => handleDrop(e, currentPageIndex)}
+                   onDragOver={handleDragOver}>
                 <Page
                   pageData={bookData.pages[currentPageIndex]}
                   pageIndex={currentPageIndex}
                   face="front"
+                  canvas={bookData.canvas}
                   isEditMode={isEditMode}
                   isActive={activePageIndex === currentPageIndex}
+                  selectedElement={selectedElement}
                   onSelectElement={selectElement}
                   onUpdateElement={updateElement}
                 />
               </div>
               
               {currentPageIndex + 1 < bookData.pages.length && (
-                <div className="page-right absolute right-0 w-1/2 h-full">
+                <div className="page-right absolute right-0 w-1/2 h-full"
+                     onDrop={(e) => handleDrop(e, currentPageIndex + 1)}
+                     onDragOver={handleDragOver}>
                   <Page
                     pageData={bookData.pages[currentPageIndex + 1]}
                     pageIndex={currentPageIndex + 1}
                     face="front"
+                    canvas={bookData.canvas}
                     isEditMode={isEditMode}
                     isActive={activePageIndex === currentPageIndex + 1}
+                    selectedElement={selectedElement}
                     onSelectElement={selectElement}
                     onUpdateElement={updateElement}
                   />
@@ -298,43 +511,54 @@ function CreateStory() {
             </>
           )}
         </div>
+      </div>
+      
+      <div className="flex justify-between items-center mt-2 mb-24 w-full max-w-[1000px] relative z-10">
+        <button
+          onClick={() => flipPage('prev')}
+          disabled={currentPageIndex === 0}
+          className="px-6 py-3 bg-green-600 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700 transition-colors font-semibold"
+        >
+          ← Previous
+        </button>
         
-        <div className="flex justify-between items-center mt-4">
-          <button
-            onClick={() => flipPage('prev')}
-            disabled={currentPageIndex === 0}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700 transition-colors font-semibold"
-          >
-            ← Previous
-          </button>
-          
-          <span className="text-gray-600 font-semibold">
-            Page {currentPageIndex + 1} - {Math.min(currentPageIndex + 2, bookData.pages.length)} of {bookData.pages.length}
-          </span>
-          
-          <button
-            onClick={() => flipPage('next')}
-            disabled={currentPageIndex >= bookData.pages.length - 2}
-            className="px-6 py-3 bg-green-600 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700 transition-colors font-semibold"
-          >
-            Next →
-          </button>
-        </div>
+        <span className="text-gray-600 font-semibold">
+          Page {currentPageIndex + 1} - {Math.min(currentPageIndex + 2, bookData.pages.length)} of {bookData.pages.length}
+        </span>
+        
+        <button
+          onClick={() => flipPage('next')}
+          disabled={currentPageIndex >= bookData.pages.length - 2}
+          className="px-6 py-3 bg-green-600 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700 transition-colors font-semibold"
+        >
+          Next →
+        </button>
       </div>
       
       <ControlBar
         isEditMode={isEditMode}
         selectedElement={selectedElement}
+        currentPage={bookData.pages[activePageIndex] as ContentPage}
         onToggleEditMode={toggleEditMode}
         onAddText={addTextElement}
-        onAddImage={addImageElement}
+        onAddImage={toggleImageTray}
         onDeleteElement={deleteSelectedElement}
         onAddPage={addPage}
         onExportJSON={exportJSON}
         onBringForward={bringForward}
         onSendBackward={sendBackward}
         onUpdateTextProperty={updateTextProperty}
+        onIncreaseFontSize={increaseFontSize}
+        onDecreaseFontSize={decreaseFontSize}
+        onUpdateTextBgColor={updateTextBgColor}
+        onUpdateTextBgOpacity={updateTextBgOpacity}
+        onUpdateImageFrame={updateImageFrame}
+        onPageBgUpload={handlePageBgUpload}
+        onPageBgOpacity={handlePageBgOpacity}
+        onRemovePageBg={removePageBg}
       />
+      
+      <ImageTray isVisible={isImageTrayVisible} onImageSelect={addImageFromUrl} />
     </div>
   )
 }
