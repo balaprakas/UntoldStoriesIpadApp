@@ -12,10 +12,10 @@ function Dashboard() {
         <div className="mb-8 flex justify-between items-start">
           <div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-800 mb-2">
-              Halo Budi Jailani!
+              Hello John!
             </h1>
             <p className="text-lg text-gray-600">
-              Ayo belajar bersama Kids Land
+              Welcome to Untold Stories
             </p>
           </div>
           <button 
