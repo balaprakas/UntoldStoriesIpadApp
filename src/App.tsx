@@ -1,11 +1,8 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import Welcome from './Welcome'
-import Dashboard from './Dashboard'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import CreateStory from './CreateStory'
 import ProtectedRoute from './components/ProtectedRoute'
 import Login from './pages/Login'
 import Dashboard from './pages/Dashboard'
-import { Navigate } from 'react-router-dom'
 import './App.css'
 
 function App() {

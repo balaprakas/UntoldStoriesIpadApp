@@ -1,14 +1,24 @@
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, Save } from 'lucide-react'
 import { BookData, Page as PageType, Element, TextElement, ContentPage } from './types'
 import Page from './components/Page'
 import ControlBar from './components/ControlBar'
 import ImageTray from './components/ImageTray'
+import { useAuth } from './contexts/AuthContext'
+import { localDB } from './lib/localDB'
+import { supabase } from './lib/supabase'
 import './CreateStory.css'
 
 function CreateStory() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const [searchParams] = useSearchParams()
+  const [storyId] = useState(() => searchParams.get('id') || `story_${Date.now()}`)
+  const [storyTitle, setStoryTitle] = useState('My Story')
+  const [isSaving, setIsSaving] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'saved' | 'unsaved' | 'saving'>('unsaved')
+  
   const [bookData, setBookData] = useState<BookData>({
     canvas: { width: 1024, height: 768 },
     pages: [
@@ -41,23 +51,37 @@ function CreateStory() {
   const containerRef = useRef<HTMLDivElement>(null)
   
   useEffect(() => {
-    const saved = localStorage.getItem('storybook-data')
-    if (saved) {
-      try {
-        const parsedData = JSON.parse(saved)
-        if (!parsedData.canvas) {
-          parsedData.canvas = { width: 1024, height: 768 }
-        }
-        setBookData(parsedData)
-      } catch (e) {
-        console.error('Failed to load saved data')
+    const loadStory = async () => {
+      if (!user) return
+
+      const story = await localDB.getStory(storyId)
+      if (story) {
+        setBookData(story.bookData)
+        setStoryTitle(story.title)
+        setSaveStatus(story.isDirty ? 'unsaved' : 'saved')
       }
     }
-  }, [])
+
+    loadStory()
+  }, [storyId, user])
   
   useEffect(() => {
-    localStorage.setItem('storybook-data', JSON.stringify(bookData))
-  }, [bookData])
+    const saveToLocal = async () => {
+      if (!user) return
+
+      await localDB.saveStory({
+        id: storyId,
+        userId: user.id,
+        title: storyTitle,
+        bookData: bookData,
+        isDirty: true
+      })
+
+      setSaveStatus('unsaved')
+    }
+
+    saveToLocal()
+  }, [bookData, user, storyId, storyTitle])
   
   useEffect(() => {
     const calculateScale = () => {
@@ -431,17 +455,57 @@ function CreateStory() {
     }
   }
   
+  const saveToCloud = async () => {
+    if (!user) return
+    
+    setIsSaving(true)
+    setSaveStatus('saving')
+
+    try {
+      const { error } = await supabase
+        .from('stories')
+        .upsert({
+          id: storyId,
+          user_id: user.id,
+          title: storyTitle,
+          book_data: bookData,
+          last_modified_at: new Date().toISOString()
+        })
+
+      if (error) throw error
+
+      await localDB.markAsClean(storyId)
+      setSaveStatus('saved')
+      alert('Story saved to cloud successfully!')
+    } catch (error) {
+      console.error('Error saving to cloud:', error)
+      alert('Failed to save to cloud. Check console for details.')
+      setSaveStatus('unsaved')
+    } finally {
+      setIsSaving(false)
+    }
+  }
+  
   return (
     <div className="min-h-screen bg-[#dad7cd] flex flex-col items-center justify-center py-8 px-4">
       <button
         onClick={() => navigate('/dashboard')}
-        className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow"
+        className="absolute top-4 left-4 flex items-center gap-2 px-4 py-2 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow z-50"
       >
         <ArrowLeft size={20} />
         Back to Dashboard
       </button>
       
-      <div 
+      <button
+        onClick={saveToCloud}
+        disabled={isSaving}
+        className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg shadow-md hover:shadow-lg transition-shadow disabled:bg-gray-400 z-50"
+      >
+        <Save size={20} />
+        {isSaving ? 'Saving...' : saveStatus === 'saved' ? '✓ Saved' : '💾 Save to Cloud'}
+      </button>
+      
+      <div
         ref={containerRef}
         className="book-container w-full max-w-[1000px] h-[600px] md:h-[600px] relative mb-2 flex items-center justify-center"
         style={{ height: 'clamp(300px, 80vh, 600px)' }}
