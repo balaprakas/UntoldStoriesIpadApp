@@ -61,6 +61,8 @@ function CreateStory() {
         setSaveStatus(localStory.isDirty ? 'unsaved' : 'saved')
       }
 
+      if (!supabase) return
+
       const { data: cloudStory } = await supabase
         .from('stories')
         .select('*')
@@ -483,6 +485,11 @@ function CreateStory() {
   
   const saveToCloud = async () => {
     if (!user) return
+    
+    if (!supabase) {
+      alert('Cloud sync is not configured.')
+      return
+    }
     
     setIsSaving(true)
     setSaveStatus('saving')

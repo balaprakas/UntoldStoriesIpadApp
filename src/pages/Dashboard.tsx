@@ -36,6 +36,8 @@ function Dashboard() {
     setLoading(false)
 
     // Then sync from Supabase in background
+    if (!supabase) return
+
     const { data, error } = await supabase
       .from('stories')
       .select('id, title, last_modified_at')
@@ -92,7 +94,9 @@ function Dashboard() {
     await localDB.deleteStory(storyId)
 
     // Delete from Supabase
-    await supabase.from('stories').delete().eq('id', storyId)
+    if (supabase) {
+      await supabase.from('stories').delete().eq('id', storyId)
+    }
 
     // Reload stories
     loadStories()
