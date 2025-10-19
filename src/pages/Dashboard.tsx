@@ -11,6 +11,7 @@ interface Story {
   title: string
   lastModifiedAt: string
   isDirty: boolean
+  templateId?: string
 }
 
 function Dashboard() {
@@ -33,7 +34,8 @@ function Dashboard() {
       id: s.id,
       title: s.title,
       lastModifiedAt: s.lastModifiedAt,
-      isDirty: s.isDirty
+      isDirty: s.isDirty,
+      templateId: s.templateId
     })))
     setLoading(false)
 
@@ -76,7 +78,8 @@ function Dashboard() {
         id: s.id,
         title: s.title,
         lastModifiedAt: s.lastModifiedAt,
-        isDirty: s.isDirty
+        isDirty: s.isDirty,
+        templateId: s.templateId
       })))
     }
   }
@@ -85,8 +88,13 @@ function Dashboard() {
    setShowTemplateModal(true); // Open modal instead
  };
 
-  const handleEdit = (storyId: string) => {
-    navigate(`/create-story?id=${storyId}`)
+  const handleEdit = async (storyId: string) => {
+    const story = await localDB.getStory(storyId)
+    if (story?.templateId) {
+      navigate(`/create-template-story/${story.templateId}?id=${storyId}`)
+    } else {
+      navigate(`/create-story?id=${storyId}`)
+    }
   }
 
   const handleDelete = async (storyId: string) => {

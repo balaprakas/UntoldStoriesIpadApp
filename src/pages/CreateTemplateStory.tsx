@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { CoverPage } from '@/components/TemplateCoverPage'
 import { InstructionsPage } from '@/components/InstructionsPage'
@@ -21,11 +21,12 @@ interface TemplateStoryData {
 
 export default function CreateTemplateStory() {
   const { templateId } = useParams<{ templateId: string }>()
+  const [searchParams] = useSearchParams()
   const { user } = useAuth()
   const navigate = useNavigate()
   
   const [currentPage, setCurrentPage] = useState(0)
-  const [storyId] = useState(() => crypto.randomUUID())
+  const [storyId] = useState(() => searchParams.get('id') || crypto.randomUUID())
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   
@@ -75,7 +76,8 @@ export default function CreateTemplateStory() {
             title: 'Untitled Story',
             bookData: initialData,
             lastModifiedAt: new Date().toISOString(),
-            isDirty: true
+            isDirty: true,
+            templateId: templateId
           })
         }
       }
@@ -107,7 +109,8 @@ export default function CreateTemplateStory() {
       title: coverData.title || 'Untitled Story',
       bookData: storyData,
       lastModifiedAt: new Date().toISOString(),
-      isDirty: true
+      isDirty: true,
+      templateId: templateId
     })
   }
 

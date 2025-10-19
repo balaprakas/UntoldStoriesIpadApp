@@ -21,14 +21,11 @@ let db: IDBPDatabase<StoryDB> | null = null
 async function getDB() {
   if (db) return db
 
-  db = await openDB<StoryDB>('storybook-db', 2, {  // Version 2
-    upgrade(db, oldVersion, newVersion, transaction) {
+  db = await openDB<StoryDB>('storybook-db', 2, {
+    upgrade(db) {
       if (!db.objectStoreNames.contains('stories')) {
         db.createObjectStore('stories', { keyPath: 'id' })
       }
-
-      // Migration for v1 -> v2
-      // No data migration needed, new fields are optional
     },
   })
 
