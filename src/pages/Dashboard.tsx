@@ -79,9 +79,9 @@ function Dashboard() {
     }
   }
 
-  const handleCreateNew = () => {
-    navigate('/create-story')
-  }
+ const handleCreateNew = () => {
+   setShowTemplateModal(true); // Open modal instead
+ };
 
   const handleEdit = (storyId: string) => {
     navigate(`/create-story?id=${storyId}`)

@@ -27,6 +27,11 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route path="/create-template-story/:templateId" element={
+          <ProtectedRoute>
+            <CreateTemplateStory />
+          </ProtectedRoute>
+        } />
       </Routes>
     </BrowserRouter>
   )
