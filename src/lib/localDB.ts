@@ -10,6 +10,8 @@ interface StoryDB extends DBSchema {
       bookData: any
       lastModifiedAt: string
       isDirty: boolean
+      templateId?: string        // NEW
+      templateData?: any          // NEW
     }
   }
 }
@@ -19,11 +21,14 @@ let db: IDBPDatabase<StoryDB> | null = null
 async function getDB() {
   if (db) return db
 
-  db = await openDB<StoryDB>('storybook-db', 1, {
-    upgrade(db) {
+  db = await openDB<StoryDB>('storybook-db', 2, {  // Version 2
+    upgrade(db, oldVersion, newVersion, transaction) {
       if (!db.objectStoreNames.contains('stories')) {
         db.createObjectStore('stories', { keyPath: 'id' })
       }
+
+      // Migration for v1 -> v2
+      // No data migration needed, new fields are optional
     },
   })
 
@@ -38,12 +43,16 @@ export const localDB = {
     bookData: any
     lastModifiedAt?: string
     isDirty?: boolean
+    templateId?: string          // NEW
+    templateData?: any           // NEW
   }) {
     const db = await getDB()
     await db.put('stories', {
       ...story,
       lastModifiedAt: story.lastModifiedAt || new Date().toISOString(),
-      isDirty: story.isDirty !== undefined ? story.isDirty : true
+      isDirty: story.isDirty !== undefined ? story.isDirty : true,
+      templateId: story.templateId || undefined,      // NEW
+      templateData: story.templateData || undefined   // NEW
     })
   },
 
