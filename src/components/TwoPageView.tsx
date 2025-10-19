@@ -1,21 +1,24 @@
 import Page from './Page'
 import { BookData, Element } from '../types'
+import { RefObject } from 'react'
 
 interface TwoPageViewProps {
+  containerRef: RefObject<HTMLDivElement>
+  bookRef: RefObject<HTMLDivElement>
   bookData: BookData
   currentPageIndex: number
-  selectedElement: Element | null
-  onSelectElement: (element: Element | null) => void
-  onUpdateElement: (pageIndex: number, elementId: string, updates: Partial<Element>) => void
+  selectElement: (element: Element | null) => void
+  updateElement: (element: Element) => void
   scale: number
 }
 
 export default function TwoPageView({
+  containerRef,
+  bookRef,
   bookData,
   currentPageIndex,
-  selectedElement,
-  onSelectElement,
-  onUpdateElement,
+  selectElement,
+  updateElement,
   scale
 }: TwoPageViewProps) {
   const leftPageIndex = currentPageIndex
@@ -23,8 +26,13 @@ export default function TwoPageView({
   const hasRightPage = rightPageIndex < bookData.pages.length
 
   return (
-    <div className="two-page-view w-full h-full flex items-center justify-center perspective-container">
+    <div
+      ref={containerRef}
+      className="book-container w-full max-w-[1000px] h-[600px] md:h-[600px] relative mb-2 flex items-center justify-center"
+      style={{ height: 'clamp(300px, 80vh, 600px)' }}
+    >
       <div
+        ref={bookRef}
         className="book-spread flex shadow-2xl"
         style={{
           transform: `scale(${scale})`,
@@ -32,7 +40,6 @@ export default function TwoPageView({
           transition: 'transform 0.3s ease'
         }}
       >
-        {/* Left Page */}
         <div
           className="page-left relative bg-white"
           style={{
@@ -49,12 +56,11 @@ export default function TwoPageView({
             canvas={{ ...bookData.canvas, width: bookData.canvas.width / 2 }}
             isEditMode={false}
             isActive={false}
-            selectedElement={selectedElement}
-            onSelectElement={onSelectElement}
-            onUpdateElement={onUpdateElement}
+            selectedElement={null}
+            onSelectElement={selectElement}
+            onUpdateElement={updateElement}
           />
           
-          {/* Page shadow effect */}
           <div
             className="absolute top-0 right-0 w-8 h-full pointer-events-none"
             style={{
@@ -64,7 +70,6 @@ export default function TwoPageView({
           />
         </div>
 
-        {/* Center Gutter */}
         <div
           className="book-gutter"
           style={{
@@ -75,7 +80,6 @@ export default function TwoPageView({
           }}
         />
 
-        {/* Right Page */}
         {hasRightPage && (
           <div
             className="page-right relative bg-white"
@@ -93,12 +97,11 @@ export default function TwoPageView({
               canvas={{ ...bookData.canvas, width: bookData.canvas.width / 2 }}
               isEditMode={false}
               isActive={false}
-              selectedElement={selectedElement}
-              onSelectElement={onSelectElement}
-              onUpdateElement={onUpdateElement}
+              selectedElement={null}
+              onSelectElement={selectElement}
+              onUpdateElement={updateElement}
             />
             
-            {/* Page shadow effect */}
             <div
               className="absolute top-0 left-0 w-8 h-full pointer-events-none"
               style={{

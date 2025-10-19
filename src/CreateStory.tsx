@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, Save } from 'lucide-react'
 import { BookData, Page as PageType, Element, TextElement, ContentPage } from './types'
-import Page from './components/Page'
 import ControlBar from './components/ControlBar'
 import ImageTray from './components/ImageTray'
 import ViewModeToggle from './components/ViewModeToggle'
@@ -272,14 +271,16 @@ function CreateStory() {
     }
   }
   
-  const selectElement = (element: Element) => {
+  const selectElement = (element: Element | null) => {
     setSelectedElement(element)
     
-    for (let i = 0; i < bookData.pages.length; i++) {
-      const page = bookData.pages[i]
-      if (page.type === 'page' && page.elements.some(el => el.id === element.id)) {
-        setActivePageIndex(i)
-        break
+    if (element) {
+      for (let i = 0; i < bookData.pages.length; i++) {
+        const page = bookData.pages[i]
+        if (page.type === 'page' && page.elements.some(el => el.id === element.id)) {
+          setActivePageIndex(i)
+          break
+        }
       }
     }
   }
