@@ -128,7 +128,7 @@ export default function CreateTemplateStory() {
           id: storyId,
           user_id: user.id,
           title: coverData.title || 'Untitled Story',
-          template_id: templateId,
+          // template_id: templateId,  // Commented out until database column is added
           book_data: storyData,
           last_modified_at: new Date().toISOString()
         })
