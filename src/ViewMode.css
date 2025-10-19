@@ -1,0 +1,147 @@
+/* View Mode Transitions and Animations */
+
+.view-transition-container {
+  position: relative;
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Single Page View Styles */
+.single-page-view {
+  animation: slideInSingle 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes slideInSingle {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Two Page View Styles */
+.two-page-view {
+  animation: slideInTwo 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  perspective: 2000px;
+}
+
+@keyframes slideInTwo {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.book-spread {
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease-in-out;
+}
+
+.book-spread:hover {
+  transform: scale(1.02);
+}
+
+/* Page turn animation */
+.page-left, .page-right {
+  transition: transform 0.6s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.page-turning-left {
+  animation: pageTurnLeft 0.8s ease-in-out;
+}
+
+.page-turning-right {
+  animation: pageTurnRight 0.8s ease-in-out;
+}
+
+@keyframes pageTurnLeft {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(-90deg);
+  }
+  100% {
+    transform: rotateY(-180deg);
+  }
+}
+
+@keyframes pageTurnRight {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(90deg);
+  }
+  100% {
+    transform: rotateY(180deg);
+  }
+}
+
+/* Book gutter shadow effect */
+.book-gutter {
+  box-shadow: 
+    inset 2px 0 4px rgba(0, 0, 0, 0.2),
+    inset -2px 0 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Responsive iPad landscape optimization */
+@media (min-width: 1024px) and (orientation: landscape) {
+  .two-page-view {
+    padding: 0 40px;
+  }
+  
+  .book-spread {
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* Smooth element transitions */
+.page-container {
+  transition: all 0.3s ease;
+}
+
+/* View mode toggle button animations */
+.view-mode-toggle {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.view-mode-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.view-mode-toggle:active {
+  transform: translateY(0);
+}
+
+/* Page number indicator animation */
+.page-indicator {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
