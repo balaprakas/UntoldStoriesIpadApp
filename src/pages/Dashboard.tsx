@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { localDB } from '../lib/localDB'
 import { supabase } from '../lib/supabase'
 import { LogOut, Plus, Edit, Trash2 } from 'lucide-react'
+import TemplateSelectionModal from '../components/TemplateSelectionModal'
 
 interface Story {
   id: string
@@ -17,6 +18,7 @@ function Dashboard() {
   const navigate = useNavigate()
   const [stories, setStories] = useState<Story[]>([])
   const [loading, setLoading] = useState(true)
+  const [showTemplateModal, setShowTemplateModal] = useState(false)
 
   useEffect(() => {
     loadStories()
@@ -181,6 +183,21 @@ function Dashboard() {
           )}
         </div>
       </div>
+
+      {/* Template Selection Modal */}
+      {showTemplateModal && (
+        <TemplateSelectionModal
+          onClose={() => setShowTemplateModal(false)}
+          onSelectBlank={() => {
+            setShowTemplateModal(false)
+            navigate('/create-story')
+          }}
+          onSelectTemplate={(templateId) => {
+            setShowTemplateModal(false)
+            navigate(`/create-template-story/${templateId}`)
+          }}
+        />
+      )}
     </div>
   )
 }
