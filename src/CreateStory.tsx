@@ -4,7 +4,6 @@ import { ArrowLeft, Save } from 'lucide-react'
 import { BookData, Page as PageType, Element, TextElement, ContentPage } from './types'
 import ControlBar from './components/ControlBar'
 import ImageTray from './components/ImageTray'
-import ViewModeToggle from './components/ViewModeToggle'
 import SinglePageView from './components/SinglePageView'
 import TwoPageView from './components/TwoPageView'
 import { useAuth } from './contexts/AuthContext'
@@ -152,8 +151,17 @@ function CreateStory() {
   }
 
   const toggleEditMode = () => {
-    setIsEditMode(!isEditMode)
+    const newEditMode = !isEditMode
+    setIsEditMode(newEditMode)
     setSelectedElement(null)
+    
+    if (!isOnCoverPage) {
+      if (newEditMode) {
+        setViewMode('single')
+      } else {
+        setViewMode('two')
+      }
+    }
   }
 
   const addTextElement = () => {
@@ -560,8 +568,6 @@ function CreateStory() {
         <Save size={20} />
         {isSaving ? 'Saving...' : saveStatus === 'saved' ? '✓ Saved' : '💾 Save to Cloud'}
       </button>
-
-      {!isOnCoverPage && <ViewModeToggle viewMode={viewMode} onToggle={toggleViewMode} />}
 
       {actualViewMode === 'single' ? (
         <SinglePageView
