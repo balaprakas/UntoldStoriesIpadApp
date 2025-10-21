@@ -116,6 +116,9 @@ function CreateStory() {
     saveToLocal()
   }, [bookData, user, storyId, storyTitle])
 
+  const isOnCoverPage = currentPageIndex === 0
+  const actualViewMode = isOnCoverPage ? 'single' : (isEditMode ? 'single' : viewMode)
+
   useEffect(() => {
     const calculateScale = () => {
       if (containerRef.current && bookData.canvas) {
@@ -123,7 +126,7 @@ function CreateStory() {
         const containerWidth = container.clientWidth
         const containerHeight = container.clientHeight
 
-        const canvasWidth = viewMode === 'two' ? bookData.canvas.width : bookData.canvas.width / 2
+        const canvasWidth = actualViewMode === 'two' ? bookData.canvas.width : bookData.canvas.width / 2
 
         const scaleX = (containerWidth * 0.95) / canvasWidth
         const scaleY = (containerHeight * 0.95) / bookData.canvas.height
@@ -136,9 +139,11 @@ function CreateStory() {
     calculateScale()
     window.addEventListener('resize', calculateScale)
     return () => window.removeEventListener('resize', calculateScale)
-  }, [bookData.canvas, viewMode])
+  }, [bookData.canvas, actualViewMode])
 
   const toggleViewMode = () => {
+    if (isOnCoverPage) return
+    
     if (viewMode === 'single' && isEditMode) {
       setIsEditMode(false)
       setSelectedElement(null)
@@ -147,9 +152,6 @@ function CreateStory() {
   }
 
   const toggleEditMode = () => {
-    if (viewMode === 'two') {
-      setViewMode('single')
-    }
     setIsEditMode(!isEditMode)
     setSelectedElement(null)
   }
@@ -496,7 +498,7 @@ function CreateStory() {
   }
 
   const flipPage = (direction: 'next' | 'prev') => {
-    const step = viewMode === 'two' ? 2 : 1
+    const step = actualViewMode === 'two' ? 2 : 1
     if (direction === 'next' && currentPageIndex < bookData.pages.length - step) {
       setCurrentPageIndex(currentPageIndex + step)
     } else if (direction === 'prev' && currentPageIndex > 0) {
@@ -559,9 +561,9 @@ function CreateStory() {
         {isSaving ? 'Saving...' : saveStatus === 'saved' ? '✓ Saved' : '💾 Save to Cloud'}
       </button>
 
-      <ViewModeToggle viewMode={viewMode} onToggle={toggleViewMode} />
+      {!isOnCoverPage && <ViewModeToggle viewMode={viewMode} onToggle={toggleViewMode} />}
 
-      {viewMode === 'single' ? (
+      {actualViewMode === 'single' ? (
         <SinglePageView
           containerRef={containerRef}
           bookRef={bookRef}
@@ -598,7 +600,7 @@ function CreateStory() {
         </button>
 
         <span className="text-gray-600 font-semibold">
-          {viewMode === 'two'
+          {actualViewMode === 'two'
             ? `Pages ${currentPageIndex + 1}-${Math.min(currentPageIndex + 2, bookData.pages.length)} of ${bookData.pages.length}`
             : `Page ${currentPageIndex + 1} of ${bookData.pages.length}`
           }
@@ -606,7 +608,7 @@ function CreateStory() {
 
         <button
           onClick={() => flipPage('next')}
-          disabled={viewMode === 'two' ? currentPageIndex >= bookData.pages.length - 2 : currentPageIndex >= bookData.pages.length - 1}
+          disabled={actualViewMode === 'two' ? currentPageIndex >= bookData.pages.length - 2 : currentPageIndex >= bookData.pages.length - 1}
           className="px-6 py-3 bg-green-600 text-white rounded-lg disabled:bg-gray-300 disabled:cursor-not-allowed hover:bg-green-700 transition-colors font-semibold"
         >
           Next →
