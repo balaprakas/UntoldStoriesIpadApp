@@ -28,8 +28,8 @@ export default function TwoPageView({
   return (
     <div
       ref={containerRef}
-      className="book-container w-full max-w-[1000px] h-[600px] md:h-[600px] relative mb-2 flex items-center justify-center"
-      style={{ height: 'clamp(300px, 80vh, 600px)' }}
+      className="book-container w-full max-w-[90vw] relative mb-2 flex items-center justify-center"
+      style={{ height: 'clamp(400px, 85vh, 900px)' }}
     >
       <div
         ref={bookRef}

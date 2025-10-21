@@ -125,9 +125,9 @@ function CreateStory() {
         
         const canvasWidth = viewMode === 'two' ? bookData.canvas.width : bookData.canvas.width / 2
         
-        const scaleX = containerWidth / canvasWidth
-        const scaleY = containerHeight / bookData.canvas.height
-        const newScale = Math.min(scaleX, scaleY, 1)
+        const scaleX = (containerWidth * 0.95) / canvasWidth
+        const scaleY = (containerHeight * 0.95) / bookData.canvas.height
+        const newScale = Math.min(scaleX, scaleY)
         
         setScale(newScale)
       }
