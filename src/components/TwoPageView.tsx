@@ -25,6 +25,13 @@ export default function TwoPageView({
   const rightPageIndex = currentPageIndex + 1
   const hasRightPage = rightPageIndex < bookData.pages.length
 
+  // Check if pages are cover or back cover (full width pages)
+  const isLeftPageFullWidth = leftPageIndex === 0 || leftPageIndex === bookData.pages.length - 1
+  const isRightPageFullWidth = rightPageIndex === bookData.pages.length - 1
+
+  const leftPageWidth = isLeftPageFullWidth ? bookData.canvas.width : bookData.canvas.width / 2
+  const rightPageWidth = isRightPageFullWidth ? bookData.canvas.width : bookData.canvas.width / 2
+
   return (
     <div
       ref={containerRef}
@@ -43,7 +50,7 @@ export default function TwoPageView({
         <div
           className="page-left relative bg-white"
           style={{
-            width: `${bookData.canvas.width / 2}px`,
+            width: `${leftPageWidth}px`,
             height: `${bookData.canvas.height}px`,
             boxShadow: '2px 0 10px rgba(0,0,0,0.1)',
             borderRight: '1px solid #e0e0e0'
@@ -53,14 +60,14 @@ export default function TwoPageView({
             pageData={bookData.pages[leftPageIndex]}
             pageIndex={leftPageIndex}
             face="front"
-            canvas={{ ...bookData.canvas, width: bookData.canvas.width / 2 }}
+            canvas={{ width: leftPageWidth, height: bookData.canvas.height }}
             isEditMode={false}
             isActive={false}
             selectedElement={null}
             onSelectElement={selectElement}
             onUpdateElement={updateElement}
           />
-          
+
           <div
             className="absolute top-0 right-0 w-8 h-full pointer-events-none"
             style={{
@@ -84,7 +91,7 @@ export default function TwoPageView({
           <div
             className="page-right relative bg-white"
             style={{
-              width: `${bookData.canvas.width / 2}px`,
+              width: `${rightPageWidth}px`,
               height: `${bookData.canvas.height}px`,
               boxShadow: '-2px 0 10px rgba(0,0,0,0.1)',
               borderLeft: '1px solid #e0e0e0'
@@ -94,14 +101,14 @@ export default function TwoPageView({
               pageData={bookData.pages[rightPageIndex]}
               pageIndex={rightPageIndex}
               face="front"
-              canvas={{ ...bookData.canvas, width: bookData.canvas.width / 2 }}
+              canvas={{ width: rightPageWidth, height: bookData.canvas.height }}
               isEditMode={false}
               isActive={false}
               selectedElement={null}
               onSelectElement={selectElement}
               onUpdateElement={updateElement}
             />
-            
+
             <div
               className="absolute top-0 left-0 w-8 h-full pointer-events-none"
               style={{
